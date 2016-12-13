@@ -7,19 +7,35 @@ var slider = (function() {
 			Animation = function() {};
 
 	var init = function(images) {
-		var images = images;
+		images = images;
 		count = images.length;
 		if(sliderElement && count) {
 			for(var i = 0; i < count; i++) {
-				slider.createSlide(images[i]);
+				slides[i] = slider.createSlide(images[i]);
 			}
-			slides = document.getElementsByClassName('slide');
-			slides[currentSlide - 1].style.display = 'block';
+			slides[currentSlide - 1].slideDiv.style.display = 'block';
 			slider.run();
 		}
 	};
 
+	Animation.prototype.fadeOut = function (arguments) {
+			var opacity = 1.0,
+			scale = 1.0,
+			left = 0,
+			top = 0,
+			width = this.slide.style.width,
+			height = this.slide.style.height;
 
+	this.slide.style.opacity = opacity - 0.01;
+	this.slide.style.scale = scale - 0.01;
+	this.slide.style.top = (top + 1) + '%';
+	this.slide.style.left = (left + 1) + '%';
+
+	};
+
+	Animation.prototype.fadeIn = function() {
+
+	}
 
 	
 	
@@ -53,35 +69,36 @@ var slider = (function() {
 	};
 
 	slider.showSlide = function() {
-		slides[currentSlide - 1].style.display = 'block';
+		slides[currentSlide - 1].slideDiv.style.display = 'block';
 	};
 
 	slider.hideSlide = function() {
-		slides[currentSlide - 1].style.display = 'none';
+		slides[currentSlide - 1].slideDiv.style.display = 'none';
 	};
 
 	slider.isNext = function() {
 		return currentSlide < count;
 	};
 
-	slider.changeSlide = function(slide) {
+	slider.changeSlide = function(slide, that) {
+		
 		if(count > 1) {
 			slider.hideSlide(currentSlide - 1);
 			if(slide) {
 			currentSlide = slide ;
 			} else if(slider.isNext()) {
-				currentSlide = currentSlide + 1 ;
+				currentSlide++ ;
 			} else {
 				currentSlide = 1;
 			}
-			slider.showSlide(currentSlide);
-			console.log(currentSlide);
+			slider.showSlide(currentSlide - 1);
 			window.setTimeout(slider.changeSlide, 2000);
 		}
 	};
 
 	slider.run = function() {
-		this.changeSlide();
+		var that = this;
+		this.changeSlide(null, that);
 	}
 
 	slider.createSlide = function(image) {
@@ -97,22 +114,3 @@ var slider = (function() {
 		init: init
 	};
 })();
-var Animation = function() {};
-Animation.prototype.fadeOut = function (arguments) {
-			var opacity = 1.0,
-			scale = 1.0,
-			left = 0,
-			top = 0,
-			width = this.slide.style.width,
-			height = this.slide.style.height;
-
-	this.slide.style.opacity = opacity - 0.01;
-	this.slide.style.scale = scale - 0.01;
-	this.slide.style.top = (top + 1) + '%';
-	this.slide.style.left = (left + 1) + '%';
-
-	};
-
-	Animation.prototype.fadeIn = function() {
-
-	}
