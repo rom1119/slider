@@ -1,4 +1,4 @@
-var slider = (function() {
+var plugin = (function() {
 	var currentSlide = 1,
 			slides = [],
 			sliderElement = document.getElementById('slider'),
@@ -18,22 +18,28 @@ var slider = (function() {
 		}
 	};
 
-	Animation.prototype.fadeOut = function (arguments) {
-			var opacity = 1.0,
-			scale = 1.0,
-			left = 0,
-			top = 0,
-			width = this.slide.style.width,
-			height = this.slide.style.height;
+	Animation.prototype.fadeOut = function (x) {
+			var opacity = 0.3,
+			scale = 'scaleX(0)',
+			left = '0%',
+			zIndex = 1,
+			top = '0%';
+			//width = this.slide.style.width,
+			//height = this.slide.style.height;
+			window.setTimeout(function() {
+				slides[x].slideDiv.style.zIndex = zIndex;
+				//slides[x].slideDiv.style.transform = scale ;
+				slides[x].slideDiv.style.top = top;
+				slides[x].slideDiv.style.left = left;
+			}, 0);
 
-	this.slide.style.opacity = opacity - 0.01;
-	this.slide.style.scale = scale - 0.01;
-	this.slide.style.top = (top + 1) + '%';
-	this.slide.style.left = (left + 1) + '%';
+	
 
 	};
 
 	Animation.prototype.fadeIn = function() {
+		slides[currentSlide - 1].leftPart.style.transform = 'translateX(0%)';
+		slides[currentSlide - 1].rightPart.style.transform = 'translateX(0%)';
 
 	}
 
@@ -45,7 +51,7 @@ var slider = (function() {
 
 	};
 
-	
+	Slide.prototype = Object.create(Animation.prototype);
 
 	Slide.prototype.createHTMLSlide = function() {
 		this.slideDiv = document.createElement('div'),
@@ -68,12 +74,27 @@ var slider = (function() {
 		rightPart.style.backgroundImage = 'url(' + this.image + ')';
 	};
 
-	slider.showSlide = function() {
-		slides[currentSlide - 1].slideDiv.style.display = 'block';
+	slider.showSlide = function(x) {
+		slides[x].slideDiv.style.opacity = '1';
+	slides[x].slideDiv.style.transform = 'scaleX(1)' ;
+	slides[x].slideDiv.style.top = '0%';
+	slides[x].slideDiv.style.left = '0%';
+	slides[x].slideDiv.style.zIndex = '10';
+
+		slides[x].leftPart.style.transform = 'translateX(-100%)';
+		slides[x].rightPart.style.transform = 'translateX(100%)';
+		slides[x].slideDiv.style.display = 'block';
+		window.setTimeout(function() {
+		slides[x].fadeIn();
+		}, 10);
 	};
 
-	slider.hideSlide = function() {
-		slides[currentSlide - 1].slideDiv.style.display = 'none';
+	slider.hideSlide = function(x) {
+		slides[x].fadeOut(x);
+		window.setTimeout(function() {
+			slides[x].slideDiv.style.display = 'none';
+		//slides[currentSlide - 1].fadeOut();
+		}, 2000);
 	};
 
 	slider.isNext = function() {
@@ -83,7 +104,7 @@ var slider = (function() {
 	slider.changeSlide = function(slide, that) {
 		
 		if(count > 1) {
-			slider.hideSlide(currentSlide - 1);
+			this.hideSlide(currentSlide - 1);
 			if(slide) {
 			currentSlide = slide ;
 			} else if(slider.isNext()) {
@@ -91,8 +112,8 @@ var slider = (function() {
 			} else {
 				currentSlide = 1;
 			}
-			slider.showSlide(currentSlide - 1);
-			window.setTimeout(slider.changeSlide, 2000);
+			this.showSlide(currentSlide - 1);
+			window.setTimeout(this.changeSlide.bind(slider), 3000);
 		}
 	};
 

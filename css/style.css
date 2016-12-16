@@ -3,11 +3,12 @@ body {
 }
 
 #slider {
-	background-color: #120909;
+	background-color: #ffffff;
 	width: 100%;
 	height: 300px;
 	position: relative;
 	clear: both;
+	overflow: hidden;
 
 }
 #slider .slider-nav {
@@ -79,25 +80,24 @@ body {
 	#slider	.slide:hover {
 
 	}
-#slider	.slide	.left-part {
-			position: absolute;
+#slider	.slide .left-part {
 			width: 50%;
 			height: 100%;
-			left: 0%;
+			transform: translateX(-100%);
 			float: left;
 			display: inline-block;
 			background-size: 200% 100%;
 			background-repeat: no-repeat;
+			transition: all 2s;
 		}
 #slider	.slide	.right-part {
-			position: absolute;
 			float: left;
 			width: 50%;
 			height: 100%;
-			right: 0%;
+			transform: translateX(100%);
 			background-size: 200% 100%;
 			background-repeat: no-repeat;
 			background-position: 100% 0%;
 			display: inline-block;
-
+			transition: all 2s;
 		}
