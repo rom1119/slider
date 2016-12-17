@@ -12,57 +12,62 @@ body {
 
 }
 #slider .slider-nav {
-		position: absolute;
+		position: relative;
 		background-color: transparent;
-
-		z-index: 10;
+		height: 100%;
+		z-index: 15;
 }
 
 #slider .slider-nav	.prev-slide {
 			position: absolute;
-			top: 50%;
+			height: 64px;
+			top: calc(50% - 30px);
 			color: #E2E2E2;
 			outline: none;
-			padding: 15px;
+			padding: 10px 15px;
 			font-size: 2em;
 			border-radius: 50%;
 			background-color: transparent;
-			border: 3px solid rgba(white, .7);
+			border: 3px solid #DDD8D8;
+			cursor: pointer;
 }
 
-#slider .slider-nav	.prev-slide::before {
+#slider .slider-nav	.prev-slide span {
 				position: relative;
 				left: 0px;
 				transition: all .3s;
 				
 }
 
-#slider .slider-nav	.prev-slide:hover .prev-slide::before {
+#slider .slider-nav	.prev-slide:hover span {
 				position: relative;
-				left: -10px;
+				left: -5px;
 
 	}
 #slider .slider-nav .next-slide {
 			position: absolute;
-			top: 50%;
+			height: 64px;
+			top: calc(50% - 30px);
 			color: #E2E2E2;
 			outline: none;
-			padding: 15px;
+			padding: 10px 15px;
 			font-size: 2em;
 			border-radius: 50%;
 			background-color: transparent;
-			border: 3px solid rgba(white, .7);
+			border: 3px solid #DDD8D8;
 			right: 0;
+			cursor: pointer;
 		}
-#slider .slider-nav .next-slide::before {
+#slider .slider-nav .next-slide span {
 				position: relative;
 				left: 0px;
 				transition: all .3s;
 				
 	}
-#slider .slider-nav .next-slide:hover .next-slide::before {
+#slider .slider-nav .next-slide:hover span {
 				position: relative;
-				left: 10px;
+				left: 5px;
+				
 	}
 #slider	.slide {
 		position: absolute;
