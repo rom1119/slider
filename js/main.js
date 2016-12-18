@@ -1,4 +1,4 @@
-var plugin = (function() {
+// var plugin = (function() {
 	var currentSlide = 1,
 			sliderElement = document.getElementById('slider'),
 			count = 0,
@@ -23,12 +23,12 @@ var plugin = (function() {
 				slider.items[i] = slider.createSlide(images[i]);
 			}
 			//slider.createNavigation(slider.items[0].slideDiv);
-			slider.current = slider.items[currentSlide - 1];
-			slider.current.slideDiv.style.display = 'block';
-			slider.current.leftPart.style.transform = 'translateX(0%)';
-			slider.current.rightPart.style.transform = 'translateX(0%)';
+			slider.currentItem = slider.items[currentSlide - 1];
+			slider.currentItem.slideDiv.style.display = 'block';
+			slider.currentItem.leftPart.style.transform = 'translateX(0%)';
+			slider.currentItem.rightPart.style.transform = 'translateX(0%)';
 			slider.createNavigation(slider.items[0].slideDiv);
-			slider.run();
+			//slider.run();
 		}
 	};
 
@@ -132,69 +132,87 @@ var plugin = (function() {
 		rightPart.style.backgroundImage = 'url(' + this.image + ')';
 	};
 
-	slider.showSlide = function(slide) {
-		slide.slideDiv.style.opacity = '1';
-		slide.slideDiv.style.transform = 'scaleX(1)' ;
-		slide.slideDiv.style.top = '0%';
-		slide.slideDiv.style.left = '0%';
-		slide.slideDiv.style.zIndex = '10';
+	Slide.prototype.isVisible = function() {
+		return this.slideDiv.style.display == 'block';
+	}
 
-		slide.leftPart.style.transform = 'translateX(-100%)';
-		slide.rightPart.style.transform = 'translateX(100%)';
-		slide.slideDiv.style.display = 'block';
-		window.setTimeout(slide.fadeIn.bind(slide), 10);
+	slider.isContainer = function() {
+		return sliderElement !== undefined;
+	}
+
+	slider.showSlide = function(slide) {
+		if(slide && !slide.isVisible()) {
+			slide.slideDiv.style.opacity = '1';
+			slide.slideDiv.style.transform = 'scaleX(1)' ;
+			slide.slideDiv.style.top = '0%';
+			slide.slideDiv.style.left = '0%';
+			slide.slideDiv.style.zIndex = '10';
+
+			slide.leftPart.style.transform = 'translateX(-100%)';
+			slide.rightPart.style.transform = 'translateX(100%)';
+			slide.slideDiv.style.display = 'block';
+			window.setTimeout(slide.fadeIn.bind(slide), 10);
+			return true;
+		}
+		return false;
+			
 	};
 
 	slider.hideSlide = function(slide) {
-		slide.fadeOut();
-		window.setTimeout(function() {
-			slide.slideDiv.style.display = 'none';
-		//slides[currentSlide - 1].fadeOut();
-		}, 2000);
+		if(slide && slide.isVisible()) {
+			slide.fadeOut();
+			window.setTimeout(function() {
+				slide.slideDiv.style.display = 'none';
+			//slides[currentSlide - 1].fadeOut();
+			}, 2000);
+			return true;
+		}
+		return false;
 	};
 
 	var isNextSlide = function() {
-		return currentSlide < count;
+		return currentSlide < count && currentSlide > 0;
 	};
 
 	var isPrevSlide = function() {
-		return count > 1 && currentSlide === 1;
+		return count > 1 && (currentSlide > 1 && currentSlide <= count);
 	};
 
 	slider.changeSlide = function(slide) {
-		//console.log(currentSlide);
 		
 		if(count > 1) {
-			this.hideSlide(this.current);
-			if(slide) {
-			currentSlide = slide ;
-			clearTimeout(timer);
-			} else if(isNextSlide()) {
-				currentSlide++ ;
-			} else {
-				currentSlide = 1;
-			}
-			console.log(currentSlide);
-			this.current = this.items[currentSlide - 1];
-			this.showSlide(this.current);
-			if(timer === undefined) {
-				var timer = window.setTimeout(this.changeSlide.bind(slider), 3000);
-				
-			}
+			this.hideSlide(this.currentItem);
+			if(slide && (slide > 0 && slide <= count)) {
+				currentSlide = slide ;
+				this.currentItem = this.items[currentSlide - 1];
+				this.showSlide(this.currentItem);
+
+				return true;
+			//clearTimeout(timer);
+			} else if(slide === undefined) {
+				this.nextSlide();
+				this.currentItem = this.items[currentSlide - 1];
+				this.showSlide(this.currentItem);
+
+				return true;
+			}			
 		}
+
+		return false;
 	};
 
 	slider.prevSlide = function() {
-		return isPrevSlide() ? --currentSlide : count;
+		return isPrevSlide() ? --currentSlide : currentSlide = count;
 	}
 
 	slider.nextSlide = function() {
-		return isNextSlide() ? ++currentSlide : 1;
+		return isNextSlide() ? ++currentSlide : currentSlide = 1;
 	}
 
 	slider.run = function() {
 		var that = this;
-		this.changeSlide.bind(that);
+		var timer = window.setInterval(this.changeSlide.bind(slider), 3000);
+
 	};
 
 	slider.createSlide = function(image) {
@@ -223,7 +241,7 @@ var plugin = (function() {
 	
 	
 
-	return {
-		init: init
-	};
-})();
+// 	return {
+// 		init: init
+// 	};
+// })();
