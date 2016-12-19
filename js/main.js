@@ -3,22 +3,22 @@
 			sliderElement = document.getElementById('slider'),
 			count = 0,
 			slider = {},
-			elementClass = {'navigation': {}},
+			classHTML = {'navigation': {}},
 			Animation = function() {},
 			Navigation = function() {};
 
 	slider.items = [];
 
-	elementClass.navigation.nav = 'slider-nav';
-	elementClass.navigation.prev = 'prev-slide';
-	elementClass.navigation.next = 'next-slide';
-	elementClass.navigation.iconLeft = ['glyphicon', 'glyphicon-chevron-left'];
-	elementClass.navigation.iconRight = ['glyphicon', 'glyphicon-chevron-right'];
+	classHTML.navigation.nav = 'slider-nav';
+	classHTML.navigation.prev = 'prev-slide';
+	classHTML.navigation.next = 'next-slide';
+	classHTML.navigation.iconLeft = ['glyphicon', 'glyphicon-chevron-left'];
+	classHTML.navigation.iconRight = ['glyphicon', 'glyphicon-chevron-right'];
 
 	var init = function(images) {
 		images = images;
 		count = images.length;
-		if(sliderElement && count) {
+		if(slider.isContainer && count) {
 			for(var i = 0; i < count; i++) {
 				slider.items[i] = slider.createSlide(images[i]);
 			}
@@ -55,15 +55,15 @@
 
 
 		sliderElement.insertBefore(this.nav, firstSlide);
-		this.addClass(this.nav, elementClass.navigation.nav);
+		this.addClass(this.nav, classHTML.navigation.nav);
 		this.nav.appendChild(this.prev);
 		this.nav.appendChild(this.next);
 		this.prev.appendChild(iconLeft);
 		this.next.appendChild(iconRight);
-		this.addClass(iconLeft, elementClass.navigation.iconLeft);
-		this.addClass(iconRight, elementClass.navigation.iconRight);
-		this.addClass(this.prev, elementClass.navigation.prev);
-		this.addClass(this.next, elementClass.navigation.next);
+		this.addClass(iconLeft, classHTML.navigation.iconLeft);
+		this.addClass(iconRight, classHTML.navigation.iconRight);
+		this.addClass(this.prev, classHTML.navigation.prev);
+		this.addClass(this.next, classHTML.navigation.next);
 
 	};
 
@@ -98,10 +98,28 @@
 
 	};
 
-	Animation.prototype.fadeIn = function() {
-		this.leftPart.style.transform = 'translateX(0%)';
-		this.rightPart.style.transform = 'translateX(0%)';
+	Animation.prototype.fade = function(position) {
+		var timer;
 
+		position.left += 0.2;
+		position.right -= 0.2;
+		this.leftPart.style.transform = 'translateX(' + Math.min(position.left , 0) +'%)';
+		this.rightPart.style.transform = 'translateX(' + Math.max(position.right , 0) +'%)';
+		
+		
+		timer = setTimeout(this.fade.bind(this, position), 0);
+		if(position.left >= 0 ) {
+			clearTimeout(timer);
+		}
+	}
+
+	Animation.prototype.fadeIn = function() {
+		var position = {
+			left: -100.00,
+			right: 100.00
+		}
+
+		this.fade.call(this, position);
 	}
 
 	function Slide(image) {
@@ -151,7 +169,7 @@
 			slide.leftPart.style.transform = 'translateX(-100%)';
 			slide.rightPart.style.transform = 'translateX(100%)';
 			slide.slideDiv.style.display = 'block';
-			window.setTimeout(slide.fadeIn.bind(slide), 10);
+			slide.fadeIn();
 			return true;
 		}
 		return false;
@@ -164,7 +182,7 @@
 			window.setTimeout(function() {
 				slide.slideDiv.style.display = 'none';
 			//slides[currentSlide - 1].fadeOut();
-			}, 2000);
+			}, 3000);
 			return true;
 		}
 		return false;
@@ -224,10 +242,19 @@
 
 
 	slider.handlerNav = function(event) {
-		if(event.target.className === 'prev-slide') {
-			slider.changeSlide(slider.prevSlide());
-		} else if(event.target.className === 'next-slide') {
-			slider.changeSlide(slider.nextSlide());
+		var target = event.target;
+		var prev = (target.className === classHTML.navigation.prev || 
+			target.parentNode.className === classHTML.navigation.prev) ? 
+			event.target : '';
+
+		var next = (target.className === classHTML.navigation.next || 
+			target.parentNode.className === classHTML.navigation.next) ? 
+			event.target : '';
+		if(!prev && !next) {
+			return false;
+			;
+		} else {
+			return prev ? slider.changeSlide(slider.prevSlide()) : slider.changeSlide(slider.nextSlide());
 		}
 	}
 
