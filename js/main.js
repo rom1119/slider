@@ -3,17 +3,17 @@
 			sliderElement = document.getElementById('slider'),
 			count = 0,
 			slider = {},
-			elementClass = {'navigation': {}},
+			classHTML = {'navigation': {}},
 			Animation = function() {},
 			Navigation = function() {};
 
 	slider.items = [];
 
-	elementClass.navigation.nav = 'slider-nav';
-	elementClass.navigation.prev = 'prev-slide';
-	elementClass.navigation.next = 'next-slide';
-	elementClass.navigation.iconLeft = ['glyphicon', 'glyphicon-chevron-left'];
-	elementClass.navigation.iconRight = ['glyphicon', 'glyphicon-chevron-right'];
+	classHTML.navigation.nav = 'slider-nav';
+	classHTML.navigation.prev = 'prev-slide';
+	classHTML.navigation.next = 'next-slide';
+	classHTML.navigation.iconLeft = ['glyphicon', 'glyphicon-chevron-left'];
+	classHTML.navigation.iconRight = ['glyphicon', 'glyphicon-chevron-right'];
 
 	var init = function(images) {
 		images = images;
@@ -55,15 +55,15 @@
 
 
 		sliderElement.insertBefore(this.nav, firstSlide);
-		this.addClass(this.nav, elementClass.navigation.nav);
+		this.addClass(this.nav, classHTML.navigation.nav);
 		this.nav.appendChild(this.prev);
 		this.nav.appendChild(this.next);
 		this.prev.appendChild(iconLeft);
 		this.next.appendChild(iconRight);
-		this.addClass(iconLeft, elementClass.navigation.iconLeft);
-		this.addClass(iconRight, elementClass.navigation.iconRight);
-		this.addClass(this.prev, elementClass.navigation.prev);
-		this.addClass(this.next, elementClass.navigation.next);
+		this.addClass(iconLeft, classHTML.navigation.iconLeft);
+		this.addClass(iconRight, classHTML.navigation.iconRight);
+		this.addClass(this.prev, classHTML.navigation.prev);
+		this.addClass(this.next, classHTML.navigation.next);
 
 	};
 
@@ -224,10 +224,19 @@
 
 
 	slider.handlerNav = function(event) {
-		if(event.target.className === 'prev-slide') {
-			slider.changeSlide(slider.prevSlide());
-		} else if(event.target.className === 'next-slide') {
-			slider.changeSlide(slider.nextSlide());
+		var target = event.target;
+		var prev = (target.className === classHTML.navigation.prev || 
+			target.parentNode.className === classHTML.navigation.prev) ? 
+			event.target : '';
+
+		var next = (target.className === classHTML.navigation.next || 
+			target.parentNode.className === classHTML.navigation.next) ? 
+			event.target : '';
+		if(!prev && !next) {
+			return false;
+			;
+		} else {
+			return prev ? slider.changeSlide(slider.prevSlide()) : slider.changeSlide(slider.nextSlide());
 		}
 	}
 
