@@ -4,7 +4,7 @@ body {
 
 #slider {
 	background-color: #ffffff;
-	width: 100%;
+	max-width: 100%;
 	height: 300px;
 	position: relative;
 	clear: both;
@@ -90,7 +90,6 @@ body {
 			height: 100%;
 			transform: translateX(-100%);
 			float: left;
-			display: inline-block;
 			background-size: 200% 100%;
 			background-repeat: no-repeat;
 			transition: all 2s;
@@ -103,7 +102,6 @@ body {
 			background-size: 200% 100%;
 			background-repeat: no-repeat;
 			background-position: 100% 0%;
-			display: inline-block;
 			transition: all 2s;
 		}
 

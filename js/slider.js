@@ -1,4 +1,4 @@
- var slider = (function() {
+var slider = (function() {
 	var currentSlide = 1,
 			sliderElement = document.getElementById('slider'),
 			count = 0,
@@ -36,6 +36,43 @@
 			slider.run();
 		}
 	};
+
+	Function.prototype.extends = function(parentClass) {
+
+			for(var prop in parentClass) {
+				if(!Object.prototype.hasOwnProperty.call(this.prototype, prop)) {
+					this.prototype[prop] = parentClass[prop];
+				}
+			}
+
+			return this;
+
+	}
+
+	var isNextSlide = function() {
+
+		return currentSlide < count && currentSlide > 0;
+
+	};
+
+	var isPrevSlide = function() {
+
+		return count > 1 && (currentSlide > 1 && currentSlide <= count);
+
+	};
+
+	function Timer() {
+		this.timer = false;
+	}
+
+	Timer.prototype.initTimer = function(callback, timeout) {
+		this.timer = setInterval(callback, timeout);
+		return this;
+	};
+
+	Timer.prototype.removeTimer = function() {
+		clearInterval(this.timer);
+	}
 
 	function Listener() { };
 
@@ -184,6 +221,8 @@
 		return this.slideDiv.style.display == 'block';
 	}
 
+	slider.timer = new Timer();
+
 	slider.isContainer = function() {
 		return sliderElement !== undefined;
 	}
@@ -198,7 +237,7 @@
 			slide.leftPart.style.transform = 'translateX(-100%)';
 			slide.rightPart.style.transform = 'translateX(100%)';
 			slide.slideDiv.style.display = 'block';
-			window.setTimeout(slide.fadeIn.bind(slide), 0);
+			setTimeout(slide.fadeIn.bind(slide), 0);
 			return true;
 		}
 		return false;
@@ -216,40 +255,37 @@
 				} else {
 					slide.slideDiv.style.display = 'none';
 				}
+				clearTimeout(timer);
 			}, 2000);
-			
+
 			return true;
 		}
 		return false;
 	};
 
-	var isNextSlide = function() {
-		return currentSlide < count && currentSlide > 0;
-	};
-
-	var isPrevSlide = function() {
-		return count > 1 && (currentSlide > 1 && currentSlide <= count);
-	};
-
 	slider.changeSlide = function(slide) {
 
-		if(count < 2 ) {
+		if(count < 2 || slide === currentSlide) {
 			return false;
 		}
 
 		this.hideSlide(this.currentItem);
 
 		if(slide && (slide > 0 && slide <= count)) {
+			this.timer.removeTimer();
 			currentSlide = slide ;
 			this.currentItem = this.items[currentSlide - 1];
 			this.showSlide(this.currentItem);
+			this.timer.initTimer(this.changeSlide.bind(this), 4000);
 
 		} else if(slide === undefined) {
 			this.nextSlide();
 			this.currentItem = this.items[currentSlide - 1];
 			this.showSlide(this.currentItem);
 
-		}			
+		}	else {
+			return false;
+		}		
 		
 		return true;
 		
@@ -283,8 +319,8 @@
 	}
 
 	slider.run = function() {
-		var that = this;
-		var timer = window.setInterval(this.changeSlide.bind(slider), 4000);
+
+		this.timer.initTimer(this.changeSlide.bind(this), 4000);
 
 	};
 
