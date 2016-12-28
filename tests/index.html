@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <title>Mocha Tests</title>
   <link href="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.css" rel="stylesheet" />
+  <style>
+    button {
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <div id="mocha"></div>
@@ -14,6 +19,7 @@
   <script src="https://cdn.rawgit.com/Automattic/expect.js/0.3.1/index.js"></script>
   <script src="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js"></script>
   <script src="./../bower_components/chai/chai.js" type="text/javascript"></script>
+  <!-- <script src="./../node_modules/chai-dom/chai-dom.js" type="text/javascript"></script> -->
   
 
   <script> 
@@ -28,7 +34,7 @@ mocha.setup('tdd');
 
 
   </script>
-  <script src="./../js/main.js"></script>
+  <script src="./../js/slider.js"></script>
   <script src="./js/slider-test.js"></script>
   <script>
     mocha.checkLeaks();

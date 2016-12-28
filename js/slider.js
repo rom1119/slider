@@ -1,4 +1,6 @@
 var slider = (function() {
+	'use strict';
+
 	var currentSlide = 1,
 			sliderElement = document.getElementById('slider'),
 			count = 0,
@@ -20,12 +22,16 @@ var slider = (function() {
 	classHTML.dots.item = 'slide-dot';
 
 	var init = function(images) {
+		var i = 0;
 		images = images;
 		count = images.length;
+
 		if(sliderElement && count) {
-			for(var i = 0; i < count; i++) {
+			while(i < count) {
 				slider.items[i] = slider.createSlide(images[i]);
+				i++;
 			}
+			
 			slider.currentItem = slider.items[currentSlide - 1];
 			slider.currentItem.slideDiv.style.display = 'block';
 			slider.currentItem.dotSlide.indicate();
@@ -62,7 +68,7 @@ var slider = (function() {
 	};
 
 	function Timer() {
-		this.timer = false;
+		this.timer = null;
 	}
 
 	Timer.prototype.initTimer = function(callback, timeout) {
@@ -96,7 +102,7 @@ var slider = (function() {
 				
 				if(!prev && !next) {
 					return false;
-					;
+					
 				} else {
 					return prev ? callback(slider.prevSlide()) : callback(slider.nextSlide());
 				}
@@ -111,8 +117,8 @@ var slider = (function() {
 		var iconLeft = document.createElement('span');
 		var iconRight = document.createElement('span');
 		this.nav = document.createElement('div');
-		this.prev = document.createElement('div');
-		this.next = document.createElement('div');
+		this.prev = document.createElement('button');
+		this.next = document.createElement('button');
 
 
 		sliderElement.insertBefore(this.nav, firstSlide);
@@ -237,7 +243,7 @@ var slider = (function() {
 			slide.leftPart.style.transform = 'translateX(-100%)';
 			slide.rightPart.style.transform = 'translateX(100%)';
 			slide.slideDiv.style.display = 'block';
-			setTimeout(slide.fadeIn.bind(slide), 0);
+			setTimeout(slide.fadeIn.bind(slide), 20);
 			return true;
 		}
 		return false;
@@ -251,7 +257,6 @@ var slider = (function() {
 				if(slide.slideDiv.style.zIndex > 1) {
 					slide.slideDiv.style.display = 'none';
 					slide.slideDiv.style.display = 'block';
-					clearTimeout(timer);
 				} else {
 					slide.slideDiv.style.display = 'none';
 				}
@@ -279,7 +284,7 @@ var slider = (function() {
 			this.timer.initTimer(this.changeSlide.bind(this), 4000);
 
 		} else if(slide === undefined) {
-			this.nextSlide();
+			currentSlide = this.nextSlide();
 			this.currentItem = this.items[currentSlide - 1];
 			this.showSlide(this.currentItem);
 
@@ -298,24 +303,24 @@ var slider = (function() {
 
 		this.dotDiv.addEventListener('click', function(e) {
 
+			e.preventDefault();
+			e.stopPropagation();
+
 			var target = e.target;
 			if(target.className === classHTML.dots.item) {
 				var selectSlide = arrDots.indexOf(target) + 1;
 				slider.changeSlide(selectSlide);
 			}
-				
-			e.preventDefault();
-			e.stopPropagation();
 
 		}, false);
 	}
 
 	slider.prevSlide = function() {
-		return isPrevSlide() ? --currentSlide : currentSlide = count;
+		return isPrevSlide() ? (currentSlide - 1) : count;
 	}
 
 	slider.nextSlide = function() {
-		return isNextSlide() ? ++currentSlide : currentSlide = 1;
+		return isNextSlide() ? (currentSlide + 1) : 1;
 	}
 
 	slider.run = function() {
