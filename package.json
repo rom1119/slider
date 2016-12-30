@@ -10,8 +10,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "chai": "*"
-  }, 
+    "chai": "*",
+    "chai-dom": "^1.4.3"
+  },
   "author": "",
   "license": "ISC"
 }

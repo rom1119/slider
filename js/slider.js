@@ -1,17 +1,14 @@
 var slider = (function() {
 	'use strict';
 
-	var currentSlide = 1,
-			sliderElement = document.getElementById('slider'),
-			count = 0,
-			slider = {},
-			classHTML = {'navigation': {},
-										'dots': {}},
+	var	sliderElement = null,
+			classHTML = {
+										'navigation': {},
+										'dots': {},
+										'slide': {}
+									},
 			Animation = function() {},
 			Navigation = function() {};
-
-	slider.items = [];
-	slider.dotDiv;
 
 	classHTML.navigation.nav = 'slider-nav';
 	classHTML.navigation.prev = 'prev-slide';
@@ -20,51 +17,60 @@ var slider = (function() {
 	classHTML.navigation.iconRight = ['glyphicon', 'glyphicon-chevron-right'];
 	classHTML.dots.container = 'slider-dots';
 	classHTML.dots.item = 'slide-dot';
+	classHTML.slide.item = 'slide';
+	classHTML.slide.leftPart = 'left-part';
+	classHTML.slide.rightPart = 'right-part';
 
-	var init = function(images) {
-		var i = 0;
-		images = images;
-		count = images.length;
 
-		if(sliderElement && count) {
-			while(i < count) {
-				slider.items[i] = slider.createSlide(images[i]);
-				i++;
-			}
-			
-			slider.currentItem = slider.items[currentSlide - 1];
-			slider.currentItem.slideDiv.style.display = 'block';
-			slider.currentItem.dotSlide.indicate();
-			slider.currentItem.leftPart.style.transform = 'translateX(0%)';
-			slider.currentItem.rightPart.style.transform = 'translateX(0%)';
-			slider.onDotClick();
-			slider.createNavigation(slider.dotDiv);
-			slider.run();
+	var init = function(imagesArg, dataAttr) {
+		if(!imagesArg.length) {
+			return ;
+		}
+		var images = imagesArg;
+		sliderElement = document.querySelector('[data-gallery=' + dataAttr + ']');
+
+		if(sliderElement) {
+			createSlider(images, sliderElement);
 		}
 	};
 
-	Function.prototype.extends = function(parentClass) {
+	// Function.prototype.extends = function(parentClass) {
 
-			for(var prop in parentClass) {
-				if(!Object.prototype.hasOwnProperty.call(this.prototype, prop)) {
-					this.prototype[prop] = parentClass[prop];
-				}
-			}
+	// 		for(var prop in parentClass) {
+	// 			if(!Object.prototype.hasOwnProperty.call(this.prototype, prop)) {
+	// 				this.prototype[prop] = parentClass[prop];
+	// 			}
+	// 		}
 
-			return this;
+	// 		return this;
 
+	// }
+
+	var createSlider = function(images, sliderElement) {
+		return new Slider(images, sliderElement);
 	}
 
-	var isNextSlide = function() {
+	var isNextSlide = function(slider) {
 
-		return currentSlide < count && currentSlide > 0;
+		return slider.currentSlide < slider.count && slider.currentSlide > 0;
 
 	};
 
-	var isPrevSlide = function() {
+	var isPrevSlide = function(slider) {
 
-		return count > 1 && (currentSlide > 1 && currentSlide <= count);
+		return slider.count > 1 && (slider.currentSlide > 1 && slider.currentSlide <= slider.count);
 
+	};
+
+	var addClass = function(item, classItem) {
+		if(typeof classItem === 'string') {
+			item.classList.add(classItem);
+		} else {
+			var i, length;
+			for(i = 0, length = classItem.length; i < length; i++) {
+				item.classList.add(classItem[i]);
+			}
+		}
 	};
 
 	function Timer() {
@@ -82,15 +88,15 @@ var slider = (function() {
 
 	function Listener() { };
 
-	Listener.prototype.on = function() {
-		throw Error('this method is not implemented');
+	Listener.prototype.on = function(typeEvent, callback, el) {
+		var element = el || this.el;
+		element.addEventListener(typeEvent, callback, false);
 	}
 
 	Navigation.prototype = Object.create(Listener.prototype);
 
-	Navigation.prototype.on = function(typeEvent, callback) {
-		if('string' === typeof typeEvent) {
-			this.nav.addEventListener(typeEvent, function(e) {
+	Navigation.prototype.handler = function(e) {
+
 				var target = e.target;
 				var prev = (target.className === classHTML.navigation.prev || 
 					target.parentNode.className === classHTML.navigation.prev) ? 
@@ -104,48 +110,33 @@ var slider = (function() {
 					return false;
 					
 				} else {
-					return prev ? callback(slider.prevSlide()) : callback(slider.nextSlide());
+					return prev ? this.changeSlide(this.prevSlide()) : this.changeSlide(this.nextSlide());
 				}
 
 				e.preventDefault();
-				e.stopPropagation();
-			}, false);		
-		}
+				e.stopPropagation();		
 	}
 
 	Navigation.prototype.create = function(firstSlide) {
 		var iconLeft = document.createElement('span');
 		var iconRight = document.createElement('span');
-		this.nav = document.createElement('div');
+		this.el = document.createElement('div');
 		this.prev = document.createElement('button');
 		this.next = document.createElement('button');
 
 
-		sliderElement.insertBefore(this.nav, firstSlide);
-		this.addClass(this.nav, classHTML.navigation.nav);
-		this.nav.appendChild(this.prev);
-		this.nav.appendChild(this.next);
+		sliderElement.insertBefore(this.el, firstSlide);
+		this.el.appendChild(this.prev);
+		this.el.appendChild(this.next);
 		this.prev.appendChild(iconLeft);
 		this.next.appendChild(iconRight);
-		this.addClass(iconLeft, classHTML.navigation.iconLeft);
-		this.addClass(iconRight, classHTML.navigation.iconRight);
-		this.addClass(this.prev, classHTML.navigation.prev);
-		this.addClass(this.next, classHTML.navigation.next);
+		addClass(this.el, classHTML.navigation.nav);
+		addClass(iconLeft, classHTML.navigation.iconLeft);
+		addClass(iconRight, classHTML.navigation.iconRight);
+		addClass(this.prev, classHTML.navigation.prev);
+		addClass(this.next, classHTML.navigation.next);
 
 	};
-
-	Navigation.prototype.addClass = function(item, classItem) {
-		if(typeof classItem === 'string') {
-			item.classList.add(classItem);
-			return;
-		} else {
-			var i, length;
-			for(i = 0, length = classItem.length; i < length; i++) {
-				item.classList.add(classItem[i]);
-			}
-		}
-	};
-
 
 	Animation.prototype.fadeOut = function () {
 		var opacity = 0.3,
@@ -168,18 +159,35 @@ var slider = (function() {
 	}
 
 	function DotSlide() {
-		this.dot = document.createElement('div');
+		this.el = document.createElement('div');
 	}
 
 	DotSlide.prototype = Object.create(Listener.prototype);
 
 	DotSlide.prototype.indicate = function() {
-		this.dot.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+		this.el.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
 	}
 
 	DotSlide.prototype.notIndicate = function() {
-		this.dot.style.backgroundColor = 'transparent';
+		this.el.style.backgroundColor = 'transparent';
 	}
+
+	DotSlide.prototype.on = function(typeEvent, callback, element) {
+
+		var children = element.children;
+		var arrDots = Array.prototype.slice.call(children);
+
+		Listener.prototype.on.call(this, typeEvent, callback.bind(element, children, arrDots), element)
+	};
+
+	DotSlide.prototype.handler = function(children, arrDots, e) {
+
+		var target = e.target;
+		if(target.className === classHTML.dots.item) {
+			var selectSlide = arrDots.indexOf(target) + 1;
+			this.changeSlide(selectSlide);				
+		}
+	};
 
 	function Slide(image, DotSlide) {
 		this.image = image;
@@ -189,33 +197,37 @@ var slider = (function() {
 
 	Slide.prototype = Object.create(Animation.prototype);
 
-	Slide.prototype.createHTMLSlide = function() {
+	Slide.prototype.createHTMLSlide = function(sliderElement) {
+		var image = document.createElement('img');
 		this.slideDiv = document.createElement('div'),
 		this.leftPart = document.createElement('div'),
 		this.rightPart = document.createElement('div');
 
 		sliderElement.appendChild(this.slideDiv);
-		this.slideDiv.classList.add('slide');
-		this.slideDiv.style.display = 'none';
 		this.slideDiv.appendChild(this.leftPart);
 		this.slideDiv.appendChild(this.rightPart);
-		this.leftPart.classList.add('left-part');
-		this.rightPart.classList.add('right-part');
+		this.slideDiv.style.display = 'none';
+
+		addClass(this.slideDiv, classHTML.slide.item);
+		addClass(this.leftPart, classHTML.slide.leftPart);
+		addClass(this.rightPart, classHTML.slide.rightPart);
 
 		this.setBackground(this.leftPart, this.rightPart);
 	};
 
-	Slide.prototype.createHtmlDot = function() {
+	Slide.prototype.createHtmlDot = function(Slider) {
 
 		if(this.dotSlide instanceof DotSlide) {
-			if(!slider.dotDiv) {
-				slider.dotDiv = document.createElement('div');
-				sliderElement.appendChild(slider.dotDiv);
-				Navigation.prototype.addClass.call(this, slider.dotDiv, classHTML.dots.container);
+			if(!Slider.dotDiv) {
+				Slider.dotDiv = document.createElement('div');
+				Slider.container.appendChild(Slider.dotDiv);
+				addClass(Slider.dotDiv, classHTML.dots.container);
 			}
-			slider.dotDiv.appendChild(this.dotSlide.dot);
-			Navigation.prototype.addClass.call(this, this.dotSlide.dot, classHTML.dots.item);
+			Slider.dotDiv.appendChild(this.dotSlide.el);
+			addClass(this.dotSlide.el, classHTML.dots.item);
 		}
+
+		return this.dotSlide;
 	}
 
 	Slide.prototype.setBackground = function(leftPart, rightPart) {
@@ -224,16 +236,26 @@ var slider = (function() {
 	};
 
 	Slide.prototype.isVisible = function() {
-		return this.slideDiv.style.display == 'block';
+		return this.slideDiv.style.display === 'block';
 	}
 
-	slider.timer = new Timer();
+	function Slider(images, sliderElement) {
+		this.timer = new Timer();
+		this.items = [];
+		this.dotDiv;
+		this.container = sliderElement;
+		this.currentSlide = 1;
+		this.currentItem;
+		this.count = images.length;
 
-	slider.isContainer = function() {
-		return sliderElement !== undefined;
+		this.init(images);
+	};
+
+	Slider.prototype.isContainer = function() {
+		return this.container !== undefined;
 	}
 
-	slider.showSlide = function(slide) {
+	Slider.prototype.showSlide = function(slide) {
 		if(slide) {
 			slide.slideDiv.style.top = '0%';
 			slide.slideDiv.style.left = '0%';
@@ -250,7 +272,7 @@ var slider = (function() {
 			
 	};
 
-	slider.hideSlide = function(slide) {
+	Slider.prototype.hideSlide = function(slide) {
 		if(slide && slide.isVisible()) {
 			slide.fadeOut();
 			var timer = window.setTimeout(function() {
@@ -268,24 +290,24 @@ var slider = (function() {
 		return false;
 	};
 
-	slider.changeSlide = function(slide) {
+	Slider.prototype.changeSlide = function(slide) {
 
-		if(count < 2 || slide === currentSlide) {
+		if(this.count < 2 || slide === this.currentSlide || slide === 0) {
 			return false;
 		}
 
 		this.hideSlide(this.currentItem);
 
-		if(slide && (slide > 0 && slide <= count)) {
+		if(slide && (slide > 0 && slide <= this.count)) {
 			this.timer.removeTimer();
-			currentSlide = slide ;
-			this.currentItem = this.items[currentSlide - 1];
+			this.currentSlide = slide ;
+			this.currentItem = this.items[this.currentSlide - 1];
 			this.showSlide(this.currentItem);
 			this.timer.initTimer(this.changeSlide.bind(this), 4000);
 
 		} else if(slide === undefined) {
-			currentSlide = this.nextSlide();
-			this.currentItem = this.items[currentSlide - 1];
+			this.currentSlide = this.nextSlide();
+			this.currentItem = this.items[this.currentSlide - 1];
 			this.showSlide(this.currentItem);
 
 		}	else {
@@ -296,51 +318,53 @@ var slider = (function() {
 		
 	};
 
-	slider.onDotClick = function() {
-
-		var dots = document.getElementsByClassName(classHTML.dots.item);
-		var arrDots = Array.prototype.slice.call(dots);
-
-		this.dotDiv.addEventListener('click', function(e) {
-
-			e.preventDefault();
-			e.stopPropagation();
-
-			var target = e.target;
-			if(target.className === classHTML.dots.item) {
-				var selectSlide = arrDots.indexOf(target) + 1;
-				slider.changeSlide(selectSlide);
-			}
-
-		}, false);
+	Slider.prototype.isSlide = function(slide) {
+		return slide > 0 && slide <= this.count;
 	}
 
-	slider.prevSlide = function() {
-		return isPrevSlide() ? (currentSlide - 1) : count;
+	Slider.prototype.prevSlide = function() {
+		return isPrevSlide(this) ? (this.currentSlide - 1) : this.count;
 	}
 
-	slider.nextSlide = function() {
-		return isNextSlide() ? (currentSlide + 1) : 1;
+	Slider.prototype.nextSlide = function() {
+		return isNextSlide(this) ? (this.currentSlide + 1) : 1;
 	}
 
-	slider.run = function() {
+	Slider.prototype.run = function() {
 
 		this.timer.initTimer(this.changeSlide.bind(this), 4000);
 
 	};
 
-	slider.createSlide = function(image) {
+	Slider.prototype.createSlide = function(image) {
 		var slide = new Slide(image, new DotSlide);
-		slide.createHtmlDot();
-		slide.createHTMLSlide();
+		var dot = slide.createHtmlDot(this);
+		slide.createHTMLSlide(this.container);
+		dot.on('click', dot.handler.bind(this), this.dotDiv)
 		return slide;
 	};
 
-	slider.createNavigation = function(firstSlide) {
+	Slider.prototype.createNavigation = function(firstSlide) {
 		var nav = new Navigation();
 		nav.create(firstSlide);
-		nav.on('click', this.changeSlide.bind(this));
-		return nav;
+		nav.on('click', nav.handler.bind(this));
+		return true;
+	};
+
+	Slider.prototype.init = function(images) {
+		var i = 0;
+		while(i < this.count) {
+			this.items[i] = this.createSlide(images[i]);
+			i++;
+		}
+			
+		this.currentItem = this.items[this.currentSlide - 1];
+		this.currentItem.slideDiv.style.display = 'block';
+		this.currentItem.dotSlide.indicate();
+		this.currentItem.leftPart.style.transform = 'translateX(0%)';
+		this.currentItem.rightPart.style.transform = 'translateX(0%)';
+		this.createNavigation(this.dotDiv);
+		this.run();
 	}
 
 	
