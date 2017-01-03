@@ -1,4 +1,4 @@
-var slider = (function() {
+// var slider = (function() {
 	'use strict';
 
 	var	sliderElement = null,
@@ -23,14 +23,15 @@ var slider = (function() {
 
 
 	var init = function(imagesArg, dataAttr) {
-		if(!imagesArg.length) {
+		var images;
+		if(!imagesArg.length || 'object' !== typeof imagesArg) {
 			return ;
 		}
-		var images = imagesArg;
+		images = imagesArg;
 		sliderElement = document.querySelector('[data-gallery=' + dataAttr + ']');
 
 		if(sliderElement) {
-			createSlider(images, sliderElement);
+			return createSlider(images, sliderElement);
 		}
 	};
 
@@ -95,26 +96,27 @@ var slider = (function() {
 
 	Navigation.prototype = Object.create(Listener.prototype);
 
-	Navigation.prototype.handler = function(e) {
+	Navigation.prototype.clickHandler = function(e) {
 
-				var target = e.target;
-				var prev = (target.className === classHTML.navigation.prev || 
-					target.parentNode.className === classHTML.navigation.prev) ? 
-					e.target : '';
+		var target = e.target;
+		var prev = (target.className === classHTML.navigation.prev || 
+			target.parentNode.className === classHTML.navigation.prev) ? 
+			e.target : '';
 
-				var next = (target.className === classHTML.navigation.next || 
-					target.parentNode.className === classHTML.navigation.next) ? 
-					e.target : '';
-				
-				if(!prev && !next) {
-					return false;
-					
-				} else {
-					return prev ? this.changeSlide(this.prevSlide()) : this.changeSlide(this.nextSlide());
-				}
+		var next = (target.className === classHTML.navigation.next || 
+			target.parentNode.className === classHTML.navigation.next) ? 
+			e.target : '';
 
-				e.preventDefault();
-				e.stopPropagation();		
+		e.preventDefault();
+		e.stopPropagation();	
+		
+		if(!prev && !next) {
+			return false;
+			
+		} else {
+			return prev ? this.changeSlide(this.prevSlide()) : this.changeSlide(this.nextSlide());
+		}
+	
 	}
 
 	Navigation.prototype.create = function(firstSlide) {
@@ -143,18 +145,20 @@ var slider = (function() {
 				scale = 'scaleX(0)',
 				left = '0%',
 				zIndex = 1,
-				top = '0%';
+				top = '0%',
+				positionAbs = 'absolute';
 			
-			this.dotSlide.notIndicate();
-			this.slideDiv.style.top = top;
-			this.slideDiv.style.left = left;
-			this.slideDiv.style.zIndex = zIndex;
+		this.dotSlide.notIndicate();
+		this.slideDiv.style.top = top;
+		this.slideDiv.style.left = left;
+		this.slideDiv.style.zIndex = zIndex;
+		this.slideDiv.style.position = positionAbs;
 
 	};
 
 	Animation.prototype.fadeIn = function() {
-		this.leftPart.style.transform = 'translateX(0%)';
-		this.rightPart.style.transform = 'translateX(0%)';
+		this.leftPart.style.left = '0%';
+		this.rightPart.style.right = '0%';
 
 	}
 
@@ -180,7 +184,7 @@ var slider = (function() {
 		Listener.prototype.on.call(this, typeEvent, callback.bind(element, children, arrDots), element)
 	};
 
-	DotSlide.prototype.handler = function(children, arrDots, e) {
+	DotSlide.prototype.clickHandler = function(children, arrDots, e) {
 
 		var target = e.target;
 		if(target.className === classHTML.dots.item) {
@@ -206,6 +210,11 @@ var slider = (function() {
 		sliderElement.appendChild(this.slideDiv);
 		this.slideDiv.appendChild(this.leftPart);
 		this.slideDiv.appendChild(this.rightPart);
+		this.slideDiv.appendChild(image);
+
+		image.src = this.image;
+		image.alt = '';
+
 		this.slideDiv.style.display = 'none';
 
 		addClass(this.slideDiv, classHTML.slide.item);
@@ -240,7 +249,7 @@ var slider = (function() {
 	}
 
 	function Slider(images, sliderElement) {
-		this.timer = new Timer();
+		this.timer = {};
 		this.items = [];
 		this.dotDiv;
 		this.container = sliderElement;
@@ -260,12 +269,14 @@ var slider = (function() {
 			slide.slideDiv.style.top = '0%';
 			slide.slideDiv.style.left = '0%';
 			slide.slideDiv.style.zIndex = '10';
+			slide.slideDiv.style.display = 'block';
+			slide.slideDiv.style.position = 'relative';
 			slide.dotSlide.indicate();
 
-			slide.leftPart.style.transform = 'translateX(-100%)';
-			slide.rightPart.style.transform = 'translateX(100%)';
-			slide.slideDiv.style.display = 'block';
-			setTimeout(slide.fadeIn.bind(slide), 20);
+			slide.leftPart.style.left = '-50%';
+			slide.rightPart.style.right = '-50%';
+			
+			setTimeout(slide.fadeIn.bind(slide), 30);
 			return true;
 		}
 		return false;
@@ -283,7 +294,7 @@ var slider = (function() {
 					slide.slideDiv.style.display = 'none';
 				}
 				clearTimeout(timer);
-			}, 2000);
+			}, 2060);
 
 			return true;
 		}
@@ -303,7 +314,7 @@ var slider = (function() {
 			this.currentSlide = slide ;
 			this.currentItem = this.items[this.currentSlide - 1];
 			this.showSlide(this.currentItem);
-			this.timer.initTimer(this.changeSlide.bind(this), 4000);
+			this.timer.initTimer(this.changeSlide.bind(this), 3000);
 
 		} else if(slide === undefined) {
 			this.currentSlide = this.nextSlide();
@@ -331,24 +342,23 @@ var slider = (function() {
 	}
 
 	Slider.prototype.run = function() {
-
-		this.timer.initTimer(this.changeSlide.bind(this), 4000);
+		this.timer.initTimer(this.changeSlide.bind(this), 3000);
 
 	};
 
 	Slider.prototype.createSlide = function(image) {
 		var slide = new Slide(image, new DotSlide);
 		var dot = slide.createHtmlDot(this);
+		dot.on('click', dot.clickHandler.bind(this), this.dotDiv)
 		slide.createHTMLSlide(this.container);
-		dot.on('click', dot.handler.bind(this), this.dotDiv)
 		return slide;
 	};
 
 	Slider.prototype.createNavigation = function(firstSlide) {
 		var nav = new Navigation();
 		nav.create(firstSlide);
-		nav.on('click', nav.handler.bind(this));
-		return true;
+		nav.on('click', nav.clickHandler.bind(this));
+		return nav;
 	};
 
 	Slider.prototype.init = function(images) {
@@ -360,17 +370,19 @@ var slider = (function() {
 			
 		this.currentItem = this.items[this.currentSlide - 1];
 		this.currentItem.slideDiv.style.display = 'block';
+		this.currentItem.slideDiv.style.position = 'relative';
 		this.currentItem.dotSlide.indicate();
-		this.currentItem.leftPart.style.transform = 'translateX(0%)';
-		this.currentItem.rightPart.style.transform = 'translateX(0%)';
+		this.currentItem.leftPart.style.left = '0';
+		this.currentItem.rightPart.style.right = '0';
 		this.createNavigation(this.dotDiv);
+		this.timer = new Timer();
 		this.run();
 	}
 
 	
 	
 
-	return {
-		init: init
-	};
-})();
+// 	return {
+// 		init: init
+// 	};
+// })();,

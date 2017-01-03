@@ -8,7 +8,7 @@ for(var i = 0; i < 6; i++) {
 
 
 suite('Slider', function() {
-  init(img);
+  var slider = init(img, 'slider');
   setup(function() {
     // ...
   });
@@ -19,7 +19,7 @@ suite('Slider', function() {
       assert.equal(slider.nextSlide(), 2);
     });  
     test('should return number next slide  ', function() {
-      currentSlide = count;
+      slider.currentSlide = slider.count;
       assert.equal(slider.nextSlide(), 1);
 
     }); 
@@ -31,12 +31,12 @@ suite('Slider', function() {
   suite('#prevSlide()', function() {
     
     test('should return number prev slide', function() {
-      currentSlide = 1;
+      slider.currentSlide = 1;
       assert.equal(slider.prevSlide(), 6, 'should return 6 slide');
 
     });
     test('should return number prev slide', function() {
-      currentSlide = count;
+      slider.currentSlide = slider.count;
       assert.equal(slider.prevSlide(), 5, 'should return 5 slide');
       
     });
@@ -117,7 +117,7 @@ suite('Slider', function() {
   suite('#changeSlide(x)', function() {
     
 	    test('should return true if changed slide is success', function() {
-        currentSlide = 1;
+        slider.currentSlide = 1;
 	      assert.isNotOk(slider.changeSlide(1));
       });
       test('should return number prev slide', function() {
@@ -140,22 +140,31 @@ suite('Slider', function() {
   suite('#isNextSlide()', function() {
     
     test('should return true if next slide is exist', function() {
-      currentSlide = 5;
-      assert.isOk(isNextSlide());
+      slider.currentSlide = 5;
+      assert.isOk(isNextSlide(slider));
       
     });
     test('should return number prev slide', function() {
-      assert.isOk(isNextSlide());
+      slider.currentSlide = 1;
+      assert.isOk(isNextSlide(slider));
     });
 
     test('should return true if next slide is not exist', function() {
-      currentSlide = 6;
-      assert.isNotOk(isNextSlide());
+      slider.currentSlide = 6;
+      assert.isNotOk(isNextSlide(slider));
       
     });
     test('should return number prev slide', function() {
-      currentSlide = -1;
-      assert.isNotOk(isNextSlide());
+      slider.currentSlide = -1;
+      assert.isNotOk(isNextSlide(slider));
+    });
+    test('should return number prev slide', function() {
+      slider.currentSlide = 7;
+      assert.isNotOk(isNextSlide(slider));
+    });
+    test('should return number prev slide', function() {
+      slider.currentSlide = 0;
+      assert.isNotOk(isNextSlide(slider));
     });
 
   });
@@ -163,22 +172,44 @@ suite('Slider', function() {
    suite('#isPrevSlide()', function() {
     
     test('should return true if prev slide exist', function() {
-      currentSlide = 2;
-      assert.isOk(isPrevSlide());
+      slider.currentSlide = 2;
+      assert.isOk(isPrevSlide(slider));
       
     });
     test('should return number prev slide', function() {
-      currentSlide = 6;
-      assert.isOk(isPrevSlide());
+      slider.currentSlide = 6;
+      assert.isOk(isPrevSlide(slider));
     });
     test('should return true if prev slide not exist', function() {
-      currentSlide = 1;
-      assert.isNotOk(isPrevSlide());
+      slider.currentSlide = 1;
+      assert.isNotOk(isPrevSlide(slider));
     });
     test('should return number prev slide', function() {
-      assert.isNotOk(isPrevSlide());
+      assert.isNotOk(isPrevSlide(slider));
 
     });
+  });
+
+  suite('#isSlide()', function() {
+    test('should return true if this slide is exist', function() {
+      assert.isOk(slider.isSlide(1));
+    });
+    test('should return true if this slide is exist', function() {
+      assert.isOk(slider.isSlide(3));
+    });
+    test('should return true if this slide is exist', function() {
+      assert.isOk(slider.isSlide(6));
+    });
+    test('should return true if this slide is exist', function() {
+      assert.isNotOk(slider.isSlide(0));
+    });
+    test('should return true if this slide is exist', function() {
+      assert.isNotOk(slider.isSlide(-2));
+    });
+    test('should return true if this slide is exist', function() {
+      assert.isNotOk(slider.isSlide(7));
+    });
+
   });
 
   //       suite('#isNextSlide()', function() {
