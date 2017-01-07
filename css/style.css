@@ -17,7 +17,7 @@ body {
 	top: 0;
 	opacity: 1;
 	transform: scale(1);
-	transition: all 2s;
+	/* transition: all 2s; */
 	width: 100%;
 	height: 100%;
 }
@@ -41,7 +41,7 @@ body {
 	float: left;
 	background-size: 200% 100%;
 	background-repeat: no-repeat;
-	transition: all 2s;
+	/* transition: all 2s; */
 	position: absolute;
 }
 .slider	.slide	.right-part {
@@ -52,7 +52,7 @@ body {
 	background-size: 200% 100%;
 	background-repeat: no-repeat;
 	background-position: 100% 0%;
-	transition: all 2s;
+	/* transition: all 2s; */
 	position: absolute;
 }
 

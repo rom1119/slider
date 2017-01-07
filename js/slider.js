@@ -1,4 +1,4 @@
-// var slider = (function() {
+var slider = (function() {
 	'use strict';
 
 	var	sliderElement = null,
@@ -157,9 +157,17 @@
 	};
 
 	Animation.prototype.fadeIn = function() {
-		this.leftPart.style.left = '0%';
-		this.rightPart.style.right = '0%';
+		// var left = parseFloat(this.leftPart.style.left).toPrecision(6);
+		// var right = parseFloat(this.rightPart.style.right).toPrecision(6);
+		this.left += 5e-1;
+		this.right += 5e-1;
 
+		this.leftPart.style.left = this.left + "%";
+		this.rightPart.style.right = this.right + "%";
+		var timer = requestAnimationFrame(this.fadeIn.bind(this));
+		if(this.left >= 0) {
+			cancelAnimationFrame(timer);
+		}
 	}
 
 	function DotSlide() {
@@ -275,6 +283,9 @@
 
 			slide.leftPart.style.left = '-50%';
 			slide.rightPart.style.right = '-50%';
+
+			slide.left = parseFloat(slide.leftPart.style.left);
+			slide.right = parseFloat(slide.rightPart.style.right);
 			
 			setTimeout(slide.fadeIn.bind(slide), 30);
 			return true;
@@ -382,7 +393,7 @@
 	
 	
 
-// 	return {
-// 		init: init
-// 	};
-// })();,
+	return {
+		init: init
+	};
+})();
