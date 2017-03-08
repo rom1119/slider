@@ -18,6 +18,18 @@
 		Animation = function() {},
 		Navigation = function() {};
 
+  profiles.inside.toString = 'inside';
+  profiles.inside.left = '-50%';
+  profiles.inside.right = '-50%';
+  profiles.inside.afterAnimateHandler = 'onAfterAnimate';
+  profiles.inside.animationType = 'SlideInside';
+
+  profiles.outside.toString = 'outside';
+  profiles.outside.left = '0%';
+  profiles.outside.right = '0%';
+  profiles.outside.afterAnimateHandler = 'onAfterAnimate';
+  profiles.outside.animationType = 'SlideOutside';
+
 	classHTML.navigation.nav = 'slider-nav';
 	classHTML.navigation.prev = 'prev-slide';
 	classHTML.navigation.next = 'next-slide';
@@ -32,9 +44,9 @@
 	function createConfig(options) {
 		var self = {};
 
-		self.images = options.images;
-		self.dataGallery = options.dataGallery;
-		self.transitionSlide =  profiles[options.transitionSlide] || profiles.inside;
+		self =  profiles[options.transitionSlide] || profiles.inside;
+    self.images = options.images;
+    self.dataGallery = options.dataGallery;
 
 		return self;
 	}
@@ -193,37 +205,61 @@
 
 	};
 
-	Animation.prototype.fadeOut = function () {
-		var opacity = 0.3,
-				scale = 'scaleX(0)',
-				left = '0%',
-				zIndex = 1,
-				top = '0%',
-				positionAbs = 'absolute';
-			
-		this.dotSlide.notIndicate();
-		this.slideDiv.style.top = top;
-		this.slideDiv.style.left = left;
-		this.slideDiv.style.zIndex = zIndex;
-		this.slideDiv.style.position = positionAbs;
-
+	Animation.prototype.animate = function() {
+		throw new Error('this is interface method and must be implemented in extended class');
 	};
 
-	Animation.prototype.fadeIn = function(prevSlide) {
-		// var left = parseFloat(this.leftPart.style.left).toPrecision(6);
-		// var right = parseFloat(this.rightPart.style.right).toPrecision(6);
-		this.left += (0.6 - Math.cos(this.left * 9 / 100) / 2)  ;//5e-1
-		this.right += (0.6 - Math.cos(this.right * 9 / 100 ) / 2)  ;//5e-1
-		//this.right += 5e-1;
-		//console.log(this.left);
-		this.leftPart.style.left = this.left + "%";
-		this.rightPart.style.right = this.right + "%";
-		this.timer = requestAnimationFrame(this.fadeIn.bind(this, prevSlide));
-		if(this.left >= 0) {
-      events.emit('closeSlide', prevSlide)
-			cancelAnimationFrame(this.timer);
-		}
-	}
+  Animation.prototype.onAnimateEndHandler = function() {
+    throw new Error('this is interface method and must be implemented in extended class');
+  }
+
+  function SlideInside() {};
+  SlideInside.prototype = Object.create(Animation.prototype);
+
+  SlideInside.prototype.animate = function (prevSlide) {
+    // var left = parseFloat(this.leftPart.style.left).toPrecision(6);
+    // var right = parseFloat(this.rightPart.style.right).toPrecision(6);
+    this.left += (0.6 - Math.cos(this.left * 9 / 100) / 2)  ;//5e-1
+    this.right += (0.6 - Math.cos(this.right * 9 / 100 ) / 2)  ;//5e-1
+    //this.right += 5e-1;
+    //console.log(this.left);
+    this.leftPart.style.left = this.left + "%";
+    this.rightPart.style.right = this.right + "%";
+    this.timer = requestAnimationFrame(this.slideInside.bind(this, prevSlide));
+    if(this.left >= 0) {
+      events.emit('animationEnd', prevSlide)
+      cancelAnimationFrame(this.timer);
+    }
+  };
+
+  SlideInside.prototype.onAnimateEndHandler = function (argument) {
+    // body...
+  };
+
+  function SlideOutside() {};
+  SlideOutside.prototype = Object.create(Animation.prototype);
+
+  SlideOutside.prototype.animate = function (callback, context) {
+     // var left = parseFloat(this.leftPart.style.left).toPrecision(6);
+    // var right = parseFloat(this.rightPart.style.right).toPrecision(6);
+    this.left -= (0.6 - Math.cos(this.left * 9 / 100) / 2)  ;//5e-1
+    this.right -= (0.6 - Math.cos(this.right * 9 / 100 ) / 2)  ;//5e-1
+    //this.right += 5e-1;
+    //console.log(this.left);
+    this.leftPart.style.left = this.left + "%";
+    this.rightPart.style.right = this.right + "%";
+    this.timer = requestAnimationFrame(this.slideOutside.bind(this, callback.bind(context)));
+    if(this.left <= -50) {
+      callback();
+      events.emit('animationEnd', this);
+      cancelAnimationFrame(this.timer);
+    }
+  };
+
+  SlideOutside.prototype.onAnimateEndHandler = function (argument) {
+    // body...
+  };
+
 
 	function DotSlide() {
 		this.el = document.createElement('div');
@@ -256,13 +292,15 @@
 		}
 	};
 
-	function Slide(image, DotSlide) {
+	function Slide(image, DotSlide, animationType) {
+    if([animationType].prototype instanceof Animation) {
+      this.prototype = Object.create([animationType].prototype)
+    }
 		this.image = image;
 		this.dotSlide = DotSlide;
 
 	};
 
-	Slide.prototype = Object.create(Animation.prototype);
 
 	Slide.prototype.createHTMLSlide = function(sliderElement) {
 		var image = document.createElement('img');
@@ -300,16 +338,37 @@
 		}
 
 		return this.dotSlide;
-	}
+	};
 
 	Slide.prototype.setBackground = function(leftPart, rightPart) {
 		leftPart.style.backgroundImage = 'url(' + this.image + ')';
 		rightPart.style.backgroundImage = 'url(' + this.image + ')';
 	};
 
+  Slide.prototype.toAbsPos = function () {
+    var zIndex = 1,
+        positionAbs = 'absolute';
+        
+    this.dotSlide.notIndicate();
+    this.slideDiv.style.zIndex = zIndex;
+    this.slideDiv.style.position = positionAbs;
+
+  };
+
+  Slide.prototype.toRelPos = function () {
+    var zIndex = 10,
+        positionAbs = 'relative';
+        
+    this.dotSlide.indicate();
+    this.slideDiv.style.zIndex = zIndex;
+    this.slideDiv.style.position = positionAbs;
+
+  };
+
+  
 	Slide.prototype.isVisible = function() {
 		return this.slideDiv.style.display === 'block';
-	}
+	};
 
 	function Slider(config) {
 		this.config = config;
@@ -326,72 +385,154 @@
 
 	Slider.prototype.isContainer = function() {
 		return this.container !== undefined;
-	}
-
-	Slider.prototype.showSlide = function(numberSlide) {
-    var slide = this.items[numberSlide - 1];
-		if(slide) {
-			slide.slideDiv.style.top = '0%';
-			slide.slideDiv.style.left = '0%';
-			slide.slideDiv.style.zIndex = '10';
-			slide.slideDiv.style.display = 'block';
-			slide.slideDiv.style.position = 'relative';
-			slide.dotSlide.indicate();
-
-			slide.leftPart.style.left = '-50%';
-			slide.rightPart.style.right = '-50%';
-
-			slide.left = parseFloat(slide.leftPart.style.left);
-			slide.right = parseFloat(slide.rightPart.style.right);
-			var prev = this.prevSlide();
-			setTimeout(slide.fadeIn.bind(slide, prev), 30);
-			return true;
-		}
-		return false;
-			
 	};
 
-	Slider.prototype.hideSlide = function(numberSlide) {
-    var slide = this.items[numberSlide - 1];
-		if(slide && slide.isVisible()) {
-			//slide.fadeOut();
-				if(slide.slideDiv.style.zIndex > 1) {
-					slide.slideDiv.style.display = 'none';
-					slide.slideDiv.style.display = 'block';
-				} else {
-					slide.slideDiv.style.display = 'none';
-				}
+  Slider.prototype.showSlide = function(slide, config, callback) {
+    if(!slide.isVisible() && config) {
+      //this.slideDiv.style.top = '0%';
+      //this.slideDiv.style.left = '0%';
+      slide.slideDiv.style.display = 'block';
+      slide.leftPart.style.left = config.left;
+      slide.rightPart.style.right = config.right;
+      slide.left = parseFloat(slide.leftPart.style.left);
+      slide.right = parseFloat(slide.rightPart.style.right);
+      if(typeof callback === 'function') {
+        callback();  
+      }
+      slide.dotSlide.indicate();
 
-			return true;
-		}
-		return false;
-	};
+      return true;
+    } 
+    // else {
+    //   if(typeof callback === 'function') {
+    //     callback();  
+    //   }
+    //   slide.dotSlide.indicate();
+    //   return true;
+    // }
+  
+    return false;
+      
+  };
 
-	Slider.prototype.changeSlide = function(slide) {
+  Slider.prototype.hideSlide = function(slide) {
+   // var slide = this.items[numberSlide - 1];
+      if(slide && slide.isVisible()) {
+          //slide.fadeOut();
+        // if(slide.slideDiv.style.zIndex > 1) {
+        //     slide.slideDiv.style.display = 'none';
+        //     slide.slideDiv.style.display = 'block';
+        // } else {
+        // }
+            slide.slideDiv.style.display = 'none';
 
-		if(this.count < 2 || slide === this.currentSlide || slide === 0) {
-			return false;
-		}
-    this.currentItem.fadeOut();
-		if(slide && (slide > 0 && slide <= this.count)) {
-			this.timer.removeTimer();
-			this.currentSlide = slide ;
-			this.currentItem = this.items[this.currentSlide - 1];
-			this.showSlide(this.currentSlide);
-			this.timer.initTimer(this.changeSlide.bind(this), 3000);
+        return true;
+      }
+      return false;
+  };
 
-		} else if(slide === undefined) {
-			this.currentSlide = this.nextSlide();
-			this.currentItem = this.items[this.currentSlide - 1];
-			this.showSlide(this.currentSlide);
 
-		}	else {
-			return false;
-		}		
+
+	
+
+	// Slider.prototype.changeSlide = function(slide) {
+
+	// 	if(this.count < 2 || slide === this.currentSlide || slide === 0) {
+	// 		return false;
+	// 	}
+ //    var prevSlide = this.currentItem;
+ //    prevSlide.fadeOut();
+	// 	if(slide && (slide > 0 && slide <= this.count)) {
+	// 		this.timer.removeTimer();
+	// 		this.currentSlide = slide ;
+	// 		this.currentItem = this.items[this.currentSlide - 1];
+	// 		this.showSlide(this.currentItem, prevSlide);
+	// 		this.timer.initTimer(this.changeSlide.bind(this), 3000);
+
+	// 	} else if(slide === undefined) {
+	// 		this.currentSlide = this.nextSlide();
+	// 		this.currentItem = this.items[this.currentSlide - 1];
+	// 		this.showSlide(this.currentItem, prevSlide);
+
+	// 	}	else {
+	// 		return false;
+	// 	}		
 		
-		return true;
+	// 	return true;
 		
-	};
+	// };
+
+  Slider.prototype.changeSlide = function(slide) {
+
+    if(this.count < 2 || slide === this.currentSlide || slide === 0) {
+      return false;
+    }
+    
+    if(this.config.toString === 'inside') {
+      this.prevItem = this.currentItem;
+      this.prevItem.toAbsPos();
+      if(slide && (slide > 0 && slide <= this.count)) {
+        this.timer.removeTimer();
+        this.currentSlide = slide ;
+        this.currentItem = this.items[this.currentSlide - 1];
+        this.showSlide(this.currentItem, this.config, this.currentItem.toRelPos.bind(this.currentItem));
+        this.currentItem[this.config.animationType](this.prevItem);
+
+        this.timer.initTimer(this.changeSlide.bind(this), 3000);
+
+      } else if(slide === undefined) {
+        this.currentSlide = this.nextSlide();
+        this.currentItem = this.items[this.currentSlide - 1];
+        this.showSlide(this.currentItem, this.config, this.currentItem.toRelPos.bind(this.currentItem));
+        this.currentItem[this.config.animationType](this.prevItem);
+
+      } else {
+        return false;
+      } 
+
+    } else if(this.config.toString === 'outside') {
+      if(this.prevItem) {
+        this.prevItem.toAbsPos();
+        this.hideSlide(this.prevItem);
+      }
+      this.prevItem = this.currentItem;
+      this.prevItem.dotSlide.notIndicate();
+      if(slide && (slide > 0 && slide <= this.count)) {
+        this.timer.removeTimer();
+        this.currentSlide = slide ;
+        this.currentItem = this.items[this.currentSlide - 1];
+        this.currentItem.toAbsPos();
+        this.showSlide(this.currentItem, this.config);
+        this.prevItem[this.config.animationType].call(this.prevItem, function() {
+          
+          this.currentItem.toRelPos.call(this.currentItem);
+          this.hideSlide.call(this, this.prevItem);
+          this.prevItem.toAbsPos();
+          
+        }, this);
+        this.timer.initTimer(this.changeSlide.bind(this), 3000);
+
+      } else if(slide === undefined) {
+        this.currentSlide = this.nextSlide();
+        this.currentItem = this.items[this.currentSlide - 1];
+        this.currentItem.toAbsPos();
+        this.showSlide(this.currentItem, this.config);
+        this.prevItem.animate.call(this.prevItem, function() {
+          
+          this.currentItem.toRelPos.call(this.currentItem);
+          this.hideSlide.call(this, this.prevItem);
+          this.prevItem.toAbsPos();
+          
+          
+        }, this);
+      } else {
+        return false;
+      } 
+ 
+      return true;
+    }
+ 
+  };
 
 	Slider.prototype.isSlide = function(slide) {
 		return slide > 0 && slide <= this.count;
@@ -411,7 +552,7 @@
 	};
 
 	Slider.prototype.createSlide = function(image) {
-		var slide = new Slide(image, new DotSlide);
+		var slide = new Slide(image, new DotSlide, this.config.animationType);
 		var dot = slide.createHtmlDot(this);
 		dot.on('click', dot.clickHandler.bind(this), this.dotDiv)
 		slide.createHTMLSlide(this.container);
@@ -426,7 +567,7 @@
 	};
 
   Slider.prototype.attachEvents = function () {
-   events.on('closeSlide', this.hideSlide.bind(this));
+   //events.on('animationEnd', this[this.config.afterAnimate].bind(this));
   }
 
 	Slider.prototype.init = function(images) {
@@ -438,10 +579,13 @@
 			
 		this.currentItem = this.items[this.currentSlide - 1];
 		this.currentItem.slideDiv.style.display = 'block';
-		this.currentItem.slideDiv.style.position = 'relative';
+    this.currentItem.slideDiv.style.position = 'relative';
+		this.currentItem.slideDiv.style.zIndex = 10;
+    this.currentItem.leftPart.style.left = '0';
+    this.currentItem.rightPart.style.right = '0';
 		this.currentItem.dotSlide.indicate();
-		this.currentItem.leftPart.style.left = '0';
-		this.currentItem.rightPart.style.right = '0';
+    this.currentItem.left = parseFloat(this.currentItem.leftPart.style.left);
+    this.currentItem.right = parseFloat(this.currentItem.rightPart.style.right)
 		this.createNavigation(this.dotDiv);
     this.attachEvents();
 		this.timer = new Timer();
