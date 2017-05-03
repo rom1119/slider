@@ -2,6 +2,7 @@ var assert = chai.assert;
 
 var img = [];
 
+
 for(var i = 0; i < 6; i++) {
 	img[i] = './../img/beznazwy' + (i + 1) + '.png';
 }
