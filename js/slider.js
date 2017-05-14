@@ -21,7 +21,7 @@
 	classHTML.slide.leftPart = 'left-part';
 	classHTML.slide.rightPart = 'right-part';
 
-
+ 
 	var init = function(imagesArg, dataAttr) {
 		var images;
 		if(!imagesArg.length || 'object' !== typeof imagesArg) {
