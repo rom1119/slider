@@ -95,7 +95,7 @@ body {
 	position: absolute;
 	height: 64px;
 	top: calc(50% - 30px);
-	color: #E2E2E2;
+	color: red;
 	outline: none;
 	padding: 10px 15px;
 	font-size: 2em;
