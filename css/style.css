@@ -95,7 +95,7 @@ body {
 	position: absolute;
 	height: 64px;
 	top: calc(50% - 30px);
-	color: red;
+	color: #E2E2E2;
 	outline: none;
 	padding: 10px 15px;
 	font-size: 2em;
@@ -109,12 +109,12 @@ body {
 	position: relative;
 	left: 0px;
 	transition: all .3s;
-	
+	color: blue;
 }
 .slider .slider-nav .next-slide:hover span {
 	position: relative;
 	left: 5px;
-	
+	color: red;
 }
 
 .slider .slider-dots {
