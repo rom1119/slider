@@ -51,7 +51,7 @@
 		return self;
 	}
 
-	var init = function(config) {
+	//var init = function(config) {
 		var options = config || {};
 		if(!options.images.length || !Array.isArray(options.images)) {
 			return ;
